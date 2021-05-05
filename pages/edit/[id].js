@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { getSnippetById } from '../../utils/Fauna';
 import SnippetForm from '../../components/SnippetForm';
+import { withPageAuthRequired } from '@auth0/nextjs-auth0';
 
 export default function Home({ snippet }) {
     return (
@@ -18,18 +19,20 @@ export default function Home({ snippet }) {
     );
 }
 
-export async function getServerSideProps(context) {
-    try {
-        const id = context.params.id;
-        const snippet = await getSnippetById(id);
-
-        return {
-            props: { snippet },
-        };
-    } catch (error) {
-        console.error(error);
-        context.res.statusCode = 302;
-        context.res.setHeader('Location', `/`);
-        return { props: {} };
+export const getServerSideProps = withPageAuthRequired({
+    async getServerSideProps(context) {
+        try {
+            const id = context.params.id;
+            const snippet = await getSnippetById(id);
+            
+            return {
+                props: {snippet},
+            };
+        } catch (error) {
+            console.error(error);
+            context.res.statusCode = 302;
+            context.res.setHeader('Location', `/`);
+            return { props: {} };
+        }
     }
-}
+})
